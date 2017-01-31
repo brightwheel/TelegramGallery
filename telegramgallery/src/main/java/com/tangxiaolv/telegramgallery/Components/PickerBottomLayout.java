@@ -15,7 +15,6 @@ import com.tangxiaolv.telegramgallery.R;
 import com.tangxiaolv.telegramgallery.Theme;
 import com.tangxiaolv.telegramgallery.Utils.AndroidUtilities;
 import com.tangxiaolv.telegramgallery.Utils.LayoutHelper;
-import com.tangxiaolv.telegramgallery.Utils.LocaleController;
 
 public class PickerBottomLayout extends FrameLayout {
 
@@ -44,7 +43,7 @@ public class PickerBottomLayout extends FrameLayout {
                 Theme.createBarSelectorDrawable(isDarkTheme ? Theme.ACTION_BAR_PICKER_SELECTOR_COLOR
                         : Theme.ACTION_BAR_AUDIO_SELECTOR_COLOR, false));
         cancelButton.setPadding(AndroidUtilities.dp(29), 0, AndroidUtilities.dp(29), 0);
-        cancelButton.setText(LocaleController.getString("Preview", R.string.Preview).toUpperCase());
+        cancelButton.setText(R.string.Preview);
         // cancelButton.getPaint().setFakeBoldText(true);
         addView(cancelButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT,
                 LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT));
@@ -79,7 +78,7 @@ public class PickerBottomLayout extends FrameLayout {
         doneButtonTextView.setTextColor(isDarkTheme ? 0xffffffff : 0xff007aff);
         doneButtonTextView.setGravity(Gravity.CENTER);
         doneButtonTextView.setCompoundDrawablePadding(AndroidUtilities.dp(8));
-        doneButtonTextView.setText(LocaleController.getString("Send", R.string.done).toUpperCase());
+        doneButtonTextView.setText(R.string.Send);
         // doneButtonTextView.getPaint().setFakeBoldText(true);
         doneButton.addView(doneButtonTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT,
                 LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
