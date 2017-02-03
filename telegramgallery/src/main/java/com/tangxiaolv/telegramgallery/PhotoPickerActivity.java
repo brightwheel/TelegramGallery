@@ -23,6 +23,7 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tangxiaolv.telegramgallery.Actionbar.ActionBar;
 import com.tangxiaolv.telegramgallery.Actionbar.ActionBarMenu;
@@ -92,9 +93,13 @@ public class PhotoPickerActivity extends BaseFragment
     private ActionBarMenuItem searchItem;
     private int itemWidth = 100;
     private boolean sendPressed;
-    private boolean singlePhoto;
+    private boolean singleEntity;
 
     private PhotoPickerActivityDelegate delegate;
+
+    static final private long maxVideoDurationInMillis = 30000;
+    //50MB
+    static final private long maxVideoSizeInBytes = 50000000;
 
     public PhotoPickerActivity(int type, int limitPickPhoto,
             MediaController.AlbumEntry selectedAlbum,
@@ -106,9 +111,9 @@ public class PhotoPickerActivity extends BaseFragment
         this.selectedPhotos = selectedPhotos;
         this.type = type;
         this.recentImages = recentImages;
-        this.singlePhoto = onlyOnePhoto;
+        this.singleEntity = onlyOnePhoto;
         if (selectedAlbum != null && selectedAlbum.isVideo) {
-            singlePhoto = true;
+            singleEntity = true;
         }
     }
 
@@ -124,7 +129,7 @@ public class PhotoPickerActivity extends BaseFragment
 
     @SuppressWarnings("unchecked")
     @Override
-    public View createView(Context context) {
+    public View createView(final Context context) {
         actionBar.setBackgroundColor(Theme.ACTION_BAR_MEDIA_PICKER_COLOR);
         actionBar.setItemsBackgroundColor(Theme.ACTION_BAR_PICKER_SELECTOR_COLOR);
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
@@ -194,7 +199,7 @@ public class PhotoPickerActivity extends BaseFragment
                 .getLayoutParams();
         layoutParams.width = LayoutHelper.MATCH_PARENT;
         layoutParams.height = LayoutHelper.MATCH_PARENT;
-        layoutParams.bottomMargin = singlePhoto ? 0 : AndroidUtilities.dp(48);
+        layoutParams.bottomMargin = singleEntity ? 0 : AndroidUtilities.dp(48);
         listView.setLayoutParams(layoutParams);
         listView.setAdapter(listAdapter = new ListAdapter(context));
         AndroidUtilities.setListViewEdgeEffectColor(listView, 0xff333333);
@@ -205,7 +210,13 @@ public class PhotoPickerActivity extends BaseFragment
                     if (i < 0 || i >= selectedAlbum.photos.size()) {
                         return;
                     }
-                    if (delegate.didSelectVideo(selectedAlbum.photos.get(i).path)) {
+                    final long videoDurationInMillis = selectedAlbum.photos.get(i).getDuration();
+                    final long videoSize = selectedAlbum.photos.get(i).getSize();
+                    if (videoDurationInMillis > maxVideoDurationInMillis) {
+                        Toast.makeText(context, "You must select a video with a duration of 30 seconds or less", Toast.LENGTH_SHORT).show();
+                    } else if (videoSize > maxVideoSizeInBytes) {
+                        Toast.makeText(context, "You must select a video with a size of 50MB or less", Toast.LENGTH_SHORT).show();
+                    } else if (delegate.didSelectVideo(selectedAlbum.photos.get(i).path)) {
                         finishFragment();
                     }
                 } else {
@@ -225,7 +236,7 @@ public class PhotoPickerActivity extends BaseFragment
                     if (searchItem != null) {
                         AndroidUtilities.hideKeyboard(searchItem.getSearchField());
                     }
-                    if (singlePhoto) {
+                    if (singleEntity) {
                         // Open photo
                         PhotoViewer.getInstance().setParentActivity(getParentActivity());
                         PhotoViewer.getInstance().openPhotoForSelect(arrayList, false, i,
@@ -277,7 +288,8 @@ public class PhotoPickerActivity extends BaseFragment
         emptyView.setGravity(Gravity.CENTER);
         emptyView.setVisibility(View.GONE);
         if (selectedAlbum != null) {
-            emptyView.setText(R.string.NoPhotos);
+            int nullStateResId = selectedAlbum.isVideo ? R.string.NoVideo : R.string.NoPhotos ;
+            emptyView.setText(nullStateResId);
         } else {
             if (type == 0) {
                 emptyView.setText(
@@ -291,7 +303,7 @@ public class PhotoPickerActivity extends BaseFragment
         layoutParams = (FrameLayout.LayoutParams) emptyView.getLayoutParams();
         layoutParams.width = LayoutHelper.MATCH_PARENT;
         layoutParams.height = LayoutHelper.MATCH_PARENT;
-        layoutParams.bottomMargin = singlePhoto ? 0 : AndroidUtilities.dp(48);
+        layoutParams.bottomMargin = singleEntity ? 0 : AndroidUtilities.dp(48);
         emptyView.setLayoutParams(layoutParams);
         emptyView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -325,7 +337,7 @@ public class PhotoPickerActivity extends BaseFragment
             layoutParams = (FrameLayout.LayoutParams) progressView.getLayoutParams();
             layoutParams.width = LayoutHelper.MATCH_PARENT;
             layoutParams.height = LayoutHelper.MATCH_PARENT;
-            layoutParams.bottomMargin = singlePhoto ? 0 : AndroidUtilities.dp(48);
+            layoutParams.bottomMargin = singleEntity ? 0 : AndroidUtilities.dp(48);
             progressView.setLayoutParams(layoutParams);
 
             ProgressBar progressBar = new ProgressBar(context);
@@ -358,7 +370,7 @@ public class PhotoPickerActivity extends BaseFragment
                 sendSelectedPhotos();
             }
         });
-        if (singlePhoto) {
+        if (singleEntity) {
             pickerBottomLayout.setVisibility(View.GONE);
         }
 
@@ -446,7 +458,7 @@ public class PhotoPickerActivity extends BaseFragment
             object.imageReceiver = cell.photoImage.getImageReceiver();
             object.thumb = object.imageReceiver.getBitmap();
             object.scale = cell.photoImage.getScaleX();
-            cell.checkBox.setVisibility(View.GONE);
+            cell.checkBox.setVisibility(View.VISIBLE);
             return object;
         }
         return null;
@@ -516,9 +528,8 @@ public class PhotoPickerActivity extends BaseFragment
         delegate.openPreview();
     }
 
-    @Override
-    public boolean isSinglePhoto() {
-        return singlePhoto;
+    public boolean isSingleEntity() {
+        return singleEntity;
     }
 
     @Override
@@ -657,7 +668,7 @@ public class PhotoPickerActivity extends BaseFragment
 
     @Override
     public void sendButtonPressed(int index) {
-        if (singlePhoto) {
+        if (singleEntity) {
             selectedPhotos.clear();
             if (index < 0 || index >= selectedAlbum.photos.size()) {
                 return;
@@ -896,7 +907,7 @@ public class PhotoPickerActivity extends BaseFragment
                             delegate.selectedPhotosChanged();
                         }
                     });
-                    cell.checkFrame.setVisibility(singlePhoto ? View.GONE : View.VISIBLE);
+                    cell.checkFrame.setVisibility(singleEntity ? View.GONE : View.VISIBLE);
                 }
                 cell.itemWidth = itemWidth;
                 BackupImageView imageView = ((PhotoPickerPhotoCell) view).photoImage;
@@ -907,6 +918,18 @@ public class PhotoPickerActivity extends BaseFragment
 
                 if (selectedAlbum != null) {
                     MediaController.PhotoEntry photoEntry = selectedAlbum.photos.get(i);
+                    if (photoEntry.isVideo) {
+                        final long durationInMillis = photoEntry.getDuration();
+                        final long videoSize = photoEntry.getSize();
+                        cell.setVideoLength(durationInMillis);
+                        if (durationInMillis > maxVideoDurationInMillis || videoSize > maxVideoSizeInBytes) {
+                            cell.photoImage.setAlpha(0.5f);
+                            cell.textView.setTextColor(0xffaaaaaa);
+                        } else {
+                            cell.photoImage.setAlpha(1.f);
+                            cell.textView.setTextColor(0xffffffff);
+                        }
+                    }
                     if (photoEntry.thumbPath != null) {
                         imageView.setImage(photoEntry.thumbPath, null,
                                 mContext.getResources().getDrawable(R.drawable.nophotos));
@@ -955,7 +978,7 @@ public class PhotoPickerActivity extends BaseFragment
                     }
                 }
                 imageView.getImageReceiver().setVisible(!showing, true);
-                cell.checkBox.setVisibility(singlePhoto || showing ? View.GONE : View.VISIBLE);
+                cell.checkBox.setVisibility(singleEntity || showing ? View.GONE : View.VISIBLE);
             } else if (viewType == 1) {
                 if (view == null) {
                     LayoutInflater li = (LayoutInflater) mContext

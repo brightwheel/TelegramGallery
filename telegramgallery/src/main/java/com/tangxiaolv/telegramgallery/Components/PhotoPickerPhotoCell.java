@@ -5,13 +5,22 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.tangxiaolv.telegramgallery.AnimatorListenerAdapterProxy;
 import com.tangxiaolv.telegramgallery.R;
 import com.tangxiaolv.telegramgallery.Utils.AndroidUtilities;
 import com.tangxiaolv.telegramgallery.Utils.LayoutHelper;
+
+import java.util.concurrent.TimeUnit;
 
 import static com.tangxiaolv.telegramgallery.PhotoAlbumPickerActivity.DarkTheme;
 
@@ -22,6 +31,7 @@ public class PhotoPickerPhotoCell extends FrameLayout {
     public CheckBox checkBox;
     private AnimatorSet animator;
     public int itemWidth;
+    public TextView textView;
 
     public PhotoPickerPhotoCell(Context context) {
         super(context);
@@ -40,6 +50,29 @@ public class PhotoPickerPhotoCell extends FrameLayout {
         checkBox.setColor(0xff007aff);
         addView(checkBox,
                 LayoutHelper.createFrame(24, 24, Gravity.RIGHT | Gravity.TOP, 0, 4, 4, 0));
+
+        LinearLayout linearLayout = new LinearLayout(context);
+        linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+        addView(linearLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM));
+
+        textView = new TextView(context);
+        textView.setTextColor(0xffffffff);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+        textView.setSingleLine(true);
+        textView.setMaxLines(1);
+        textView.setEllipsize(TextUtils.TruncateAt.END);
+        textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
+        linearLayout.addView(textView,
+            LayoutHelper.createLinear(44, LayoutHelper.WRAP_CONTENT, 1.0f, 0, 0, 8, 0));
+    }
+
+    public void setVideoLength(long videoDuration) {
+        final String displayString = String.format("%02d:%02d",
+            TimeUnit.MILLISECONDS.toMinutes(videoDuration),
+            TimeUnit.MILLISECONDS.toSeconds(videoDuration) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(videoDuration))
+        );
+        textView.setText(displayString);
     }
 
     @Override

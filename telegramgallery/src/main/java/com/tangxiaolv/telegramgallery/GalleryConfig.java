@@ -4,6 +4,10 @@ package com.tangxiaolv.telegramgallery;
 import android.app.PendingIntent;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * the {@link GalleryActivity} of buidler.
@@ -12,21 +16,33 @@ public class GalleryConfig implements Parcelable {
 
     private String[] filterMimeTypes;
     private String hintOfPick;
-    private boolean singlePhoto;
+    private boolean singleEntity;
     private int limitPickPhoto;
     private PendingIntent limitReachedIntent;
+
+    private @PickerMode int pickerMode;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        PHOTO_MODE,
+        VIDEO_MODE
+    })
+    public @interface PickerMode {}
+    public final static int PHOTO_MODE = 0;
+    public final static int VIDEO_MODE = 1;
 
     private GalleryConfig(){
 
     }
 
-    private GalleryConfig(String[] filterMimeTypes, String hintOfPick, boolean singlePhoto,
-                          int limitPickPhoto, PendingIntent limitReachedIntent) {
+    private GalleryConfig(String[] filterMimeTypes, String hintOfPick, boolean singleEntity,
+                          int limitPickPhoto, PendingIntent limitReachedIntent, @PickerMode int pickerMode) {
         this.filterMimeTypes = filterMimeTypes;
         this.hintOfPick = hintOfPick;
-        this.singlePhoto = singlePhoto;
+        this.singleEntity = singleEntity;
         this.limitPickPhoto = limitPickPhoto;
         this.limitReachedIntent = limitReachedIntent;
+        this.pickerMode = pickerMode;
     }
 
     public String[] getFilterMimeTypes() {
@@ -37,8 +53,8 @@ public class GalleryConfig implements Parcelable {
         return hintOfPick;
     }
 
-    public boolean isSinglePhoto() {
-        return singlePhoto;
+    public boolean isSingleEntity() {
+        return singleEntity;
     }
 
     public int getLimitPickPhoto() {
@@ -49,12 +65,17 @@ public class GalleryConfig implements Parcelable {
         return limitReachedIntent;
     }
 
+    public @GalleryConfig.PickerMode int getPickerMode() {
+        return pickerMode;
+    }
+
     public static class Build {
         private String[] filterMimeTypes;
         private String hintOfPick;
-        private boolean singlePhoto = false;
+        private boolean singleEntity = false;
         private int limitPickPhoto = 9;
         private PendingIntent multiPhotoSelectedPendingIntent = null;
+        private @PickerMode int pickerMode = PHOTO_MODE;
 
         /**
          * @param filterMimeTypes filter of media type， based on MimeType standards：
@@ -75,10 +96,10 @@ public class GalleryConfig implements Parcelable {
         }
 
         /**
-         * @param singlePhoto true:single pick false:multi pick
+         * @param singleEntity true:single pick false:multi pick
          */
-        public Build singlePhoto(boolean singlePhoto) {
-            this.singlePhoto = singlePhoto;
+        public Build singleEntity(boolean singleEntity) {
+            this.singleEntity = singleEntity;
             return this;
         }
 
@@ -102,17 +123,23 @@ public class GalleryConfig implements Parcelable {
             return this;
         }
 
+        public Build pickerMode(@PickerMode int pickerMode) {
+            this.pickerMode = pickerMode;
+            return this;
+        }
+
         public GalleryConfig build() {
-            this.limitPickPhoto = singlePhoto ? 1 : limitPickPhoto > 0 ? limitPickPhoto : 1;
-            if (singlePhoto) {
+            this.limitPickPhoto = singleEntity ? 1 : limitPickPhoto > 0 ? limitPickPhoto : 1;
+            if (singleEntity) {
                 this.multiPhotoSelectedPendingIntent = null;
             }
             return new GalleryConfig(
                 filterMimeTypes,
                 hintOfPick,
-                singlePhoto,
+                singleEntity,
                 limitPickPhoto,
-                multiPhotoSelectedPendingIntent);
+                multiPhotoSelectedPendingIntent,
+                pickerMode);
         }
     }
 
@@ -125,18 +152,20 @@ public class GalleryConfig implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeStringArray(this.filterMimeTypes);
         dest.writeString(this.hintOfPick);
-        dest.writeByte(this.singlePhoto ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.singleEntity ? (byte) 1 : (byte) 0);
         dest.writeInt(this.limitPickPhoto);
         dest.writeValue(this.limitReachedIntent);
+        dest.writeInt(this.pickerMode);
     }
 
     protected GalleryConfig(Parcel in) {
         this.filterMimeTypes = in.createStringArray();
         this.hintOfPick = in.readString();
-        this.singlePhoto = in.readByte() != 0;
+        this.singleEntity = in.readByte() != 0;
         this.limitPickPhoto = in.readInt();
         this.limitReachedIntent =
             (PendingIntent) in.readValue(PendingIntent.class.getClassLoader());
+        this.pickerMode = in.readInt();
     }
 
     public static final Creator<GalleryConfig> CREATOR = new Creator<GalleryConfig>() {

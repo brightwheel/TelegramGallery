@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 GalleryConfig config = new GalleryConfig.Build()
                         .limitPickPhoto(11)
-                        .singlePhoto(false)
+                        .singleEntity(false)
                         .hintOfPick("this is pick hint")
                         .filterMimeTypes(new String[]{})
                         .build();
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 GalleryConfig config = new GalleryConfig.Build()
-                        .singlePhoto(true).build();
+                        .singleEntity(true).build();
                 GalleryActivity.openActivity(MainActivity.this, reqCode, config);
             }
         });

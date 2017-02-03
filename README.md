@@ -25,7 +25,7 @@ dependencies {
 //open album
 GalleryConfig config = new GalleryConfig.Build()
                         .limitPickPhoto(3)
-                        .singlePhoto(false)
+                        .singleEntity(false)
                         .hintOfPick("this is pick hint")
                         .filterMimeTypes(new String[]{"image/jpeg"})
                         .build();
