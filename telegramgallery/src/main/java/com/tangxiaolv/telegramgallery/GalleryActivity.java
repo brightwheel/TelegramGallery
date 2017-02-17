@@ -68,10 +68,11 @@ public class GalleryActivity extends Activity implements ActionBarLayout.ActionB
         albumPickerActivity = new PhotoAlbumPickerActivity(
             config.getFilterMimeTypes(),
             config.getLimitPickPhoto(),
-            config.isSinglePhoto(),
+            config.isSingleEntity(),
             config.getHintOfPick(),
             false,
-            config.getLimitReachedIntent());
+            config.getLimitReachedIntent(),
+            config.getPickerMode());
         albumPickerActivity.setDelegate(mPhotoAlbumPickerActivityDelegate);
         actionBarLayout.presentFragment(albumPickerActivity, false, true, true);
     }
@@ -201,12 +202,12 @@ public class GalleryActivity extends Activity implements ActionBarLayout.ActionB
     public static void openActivity(
             Activity activity,
             String[] filterMimeTypes,
-            boolean singlePhoto,
+            boolean singleEntity,
             int limitPickPhoto,
             int requestCode) {
         GalleryConfig.Build build = new GalleryConfig.Build();
         build.filterMimeTypes(filterMimeTypes)
-                .singlePhoto(singlePhoto)
+                .singleEntity(singleEntity)
                 .limitPickPhoto(limitPickPhoto);
         openActivity(activity, requestCode, build.build());
     }

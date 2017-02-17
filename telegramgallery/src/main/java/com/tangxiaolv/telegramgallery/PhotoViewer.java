@@ -66,33 +66,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Scroller;
 
-import com.tangxiaolv.telegramgallery.Actionbar.ActionBar;
-import com.tangxiaolv.telegramgallery.Actionbar.ActionBarMenu;
-import com.tangxiaolv.telegramgallery.Actionbar.BaseFragment;
-import com.tangxiaolv.telegramgallery.Components.AspectRatioFrameLayout;
-import com.tangxiaolv.telegramgallery.Components.CheckBox;
-import com.tangxiaolv.telegramgallery.Components.ClippingImageView;
-import com.tangxiaolv.telegramgallery.Components.PhotoCropView;
-import com.tangxiaolv.telegramgallery.Components.PickerBottomLayout;
-import com.tangxiaolv.telegramgallery.Components.SizeNotifierFrameLayoutPhoto;
-import com.tangxiaolv.telegramgallery.TL.Document;
-import com.tangxiaolv.telegramgallery.TL.FileLocation;
-import com.tangxiaolv.telegramgallery.TL.Photo;
-import com.tangxiaolv.telegramgallery.TL.PhotoSize;
-import com.tangxiaolv.telegramgallery.Utils.AndroidUtilities;
-import com.tangxiaolv.telegramgallery.Utils.FileLoader;
-import com.tangxiaolv.telegramgallery.Utils.ImageLoader;
-import com.tangxiaolv.telegramgallery.Utils.LayoutHelper;
-import com.tangxiaolv.telegramgallery.Utils.LocaleController;
-import com.tangxiaolv.telegramgallery.Utils.MediaController;
-import com.tangxiaolv.telegramgallery.Utils.NotificationCenter;
-import com.tangxiaolv.telegramgallery.Utils.Utilities;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 import static com.tangxiaolv.telegramgallery.PhotoAlbumPickerActivity.limitPickPhoto;
 import static com.tangxiaolv.telegramgallery.PhotoAlbumPickerActivity.maxSelectionReached;
 import static com.tangxiaolv.telegramgallery.PhotoAlbumPickerActivity.sHintOfPick;
@@ -447,8 +420,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
         }
 
-        @Override
-        public boolean isSinglePhoto() {
+        public boolean isSingleEntity() {
             return false;
         }
     }
@@ -493,7 +465,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
         void openPreview();
 
-        boolean isSinglePhoto();
+        boolean isSingleEntity();
     }
 
     private class FrameLayoutTouchListener extends FrameLayout {
@@ -908,7 +880,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             @Override
             public void onClick(View view) {
                 if (placeProvider != null) {
-                    if (placeProvider.getSelectedCount() != 0 || placeProvider.isSinglePhoto()) {
+                    if (placeProvider.getSelectedCount() != 0 || placeProvider.isSingleEntity()) {
                         placeProvider.sendButtonPressed(currentIndex);
                         closePhoto(false, false);
                     }
@@ -1457,7 +1429,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             bottomLayout.setVisibility(View.GONE);
             canShowBottom = false;
             Object obj = imagesArrLocals.get(index);
-            // cropItem.setVisibility(placeProvider.isSinglePhoto() ? View.VISIBLE : View.GONE);
+            // cropItem.setVisibility(placeProvider.isSingleEntity() ? View.VISIBLE : View.GONE);
             updateSelectedCount();
         }
     }

@@ -30,8 +30,6 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static android.R.attr.orientation;
-
 public class MediaController implements NotificationCenter.NotificationCenterDelegate {
     public static int[] readArgs = new int[3];
     private boolean saveToGallery = true;
@@ -77,7 +75,9 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
             MediaStore.Video.Media.BUCKET_ID,
             MediaStore.Video.Media.BUCKET_DISPLAY_NAME,
             MediaStore.Video.Media.DATA,
-            MediaStore.Video.Media.DATE_TAKEN
+            MediaStore.Video.Media.DATE_TAKEN,
+            MediaStore.Video.Media.DURATION,
+            MediaStore.Video.Media.SIZE
     };
 
     public static class AlbumEntry {
@@ -112,6 +112,15 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
         public String imagePath;
         public boolean isVideo;
         public CharSequence caption;
+        private long duration;
+        private long size;
+
+        public PhotoEntry(int bucketId, int imageId, long dateTaken, String path, int orientation,
+                          boolean isVideo, long duration, long size) {
+            this(bucketId, imageId, dateTaken, path, orientation, isVideo);
+            this.duration = duration;
+            this.size = size;
+        }
 
         public PhotoEntry(int bucketId, int imageId, long dateTaken, String path, int orientation,
                 boolean isVideo) {
@@ -121,6 +130,14 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
             this.path = path;
             this.orientation = orientation;
             this.isVideo = isVideo;
+        }
+
+        public long getDuration() {
+            return duration;
+        }
+
+        public long getSize() {
+            return size;
         }
     }
 
@@ -659,6 +676,8 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
                         int dataColumn = cursor.getColumnIndex(MediaStore.Video.Media.DATA);
                         int dateColumn = cursor
                                 .getColumnIndex(MediaStore.Video.Media.DATE_TAKEN);
+                        final int durationColumn = cursor.getColumnIndex(MediaStore.Video.Media.DURATION);
+                        final int sizeColumn = cursor.getColumnIndex(MediaStore.Video.Media.SIZE);
 
                         while (cursor.moveToNext()) {
                             int imageId = cursor.getInt(imageIdColumn);
@@ -666,13 +685,14 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
                             String bucketName = cursor.getString(bucketNameColumn);
                             String path = cursor.getString(dataColumn);
                             long dateTaken = cursor.getLong(dateColumn);
-
-                            if (path == null || path.length() == 0) {
+                            final long duration = cursor.getLong(durationColumn);
+                            final long size = cursor.getLong(sizeColumn);
+                            if (path == null || path.length() == 0 || size == 0 || duration == 0) {
                                 continue;
                             }
 
                             PhotoEntry photoEntry = new PhotoEntry(bucketId, imageId, dateTaken,
-                                    path, 0, true);
+                                    path, 0, true, duration, size);
 
                             if (allVideosAlbum == null) {
 
@@ -722,7 +742,7 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
                         allPhotosAlbumEntry = allPhotosAlbumFinal;
                         NotificationCenter.getInstance().postNotificationName(
                                 NotificationCenter.albumsDidLoaded, guid, albumsSorted,
-                                cameraAlbumIdFinal, videoAlbumsSorted, cameraAlbumVideoIdFinal);
+                                cameraAlbumIdFinal, videoAlbumsSorted, cameraAlbumVideoIdFinal, filterMimiType);
                     }
                 });
             }

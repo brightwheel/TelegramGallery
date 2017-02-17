@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.text.TextUtils;
+import android.support.annotation.StringRes;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -21,11 +21,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.tangxiaolv.telegramgallery.Actionbar.ActionBar;
-import com.tangxiaolv.telegramgallery.Actionbar.ActionBarMenu;
 import com.tangxiaolv.telegramgallery.Actionbar.ActionBarMenuItem;
 import com.tangxiaolv.telegramgallery.Actionbar.BaseFragment;
 import com.tangxiaolv.telegramgallery.Components.PhotoPickerAlbumsCell;
 import com.tangxiaolv.telegramgallery.Components.PhotoPickerSearchCell;
+import com.tangxiaolv.telegramgallery.GalleryConfig.PickerMode;
 import com.tangxiaolv.telegramgallery.Utils.AndroidUtilities;
 import com.tangxiaolv.telegramgallery.Utils.LayoutHelper;
 import com.tangxiaolv.telegramgallery.Utils.MediaController;
@@ -68,7 +68,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     private ActionBarMenuItem dropDownContainer;
     // private PickerBottomLayout pickerBottomLayout;
     private boolean sendPressed;
-    private boolean singlePhoto;
+    private boolean singleEntity;
     private boolean allowGifs;
     private int selectedMode;
     private final String[] filterMimeTypes;
@@ -82,19 +82,21 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     private final static int item_video = 3;
 
     public PhotoAlbumPickerActivity(String[] filterMimeTypes,
-                                    int limitPick,
-                                    boolean singlePhoto,
-                                    String hintOfPick,
-                                    boolean allowGifs,
-                                    PendingIntent maxSelectionReached) {
+                                                       int limitPick,
+                                                       boolean singleEntity,
+                                                       String hintOfPick,
+                                                       boolean allowGifs,
+                                                       PendingIntent maxSelectionReached,
+                                                       @PickerMode int pickerMode) {
         super();
-        limitPickPhoto = limitPick;
-        sHintOfPick = hintOfPick;
+        this.limitPickPhoto = limitPick;
+        this.sHintOfPick = hintOfPick;
         this.filterMimeTypes = filterMimeTypes;
         this.imageCheckIndexArr = new int[limitPick];
-        this.singlePhoto = singlePhoto;
+        this.singleEntity = singleEntity;
         this.allowGifs = allowGifs;
         this.maxSelectionReached = maxSelectionReached;
+        this.selectedMode = pickerMode;
     }
 
     @Override
@@ -155,48 +157,6 @@ public class PhotoAlbumPickerActivity extends BaseFragment
 
         FrameLayout frameLayout = (FrameLayout) fragmentView;
         frameLayout.setBackgroundColor(DarkTheme ? 0xff000000 : 0xffffffff);
-        //==============videos pick====================
-        if (!singlePhoto) {
-            selectedMode = 0;
-
-            ActionBarMenu menu = actionBar.createMenu();
-            dropDownContainer = new ActionBarMenuItem(context, menu, 0);
-            dropDownContainer.setSubMenuOpenSide(1);
-            dropDownContainer.addSubItem(item_photos,context.getString(
-                    R.string.PickerPhotos), 0);
-            dropDownContainer.addSubItem(item_video,context.getString(
-                    R.string.PickerVideo), 0);
-            actionBar.addView(dropDownContainer);
-            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) dropDownContainer
-                    .getLayoutParams();
-            layoutParams.height = LayoutHelper.MATCH_PARENT;
-            layoutParams.width = LayoutHelper.WRAP_CONTENT;
-            // layoutParams.rightMargin = AndroidUtilities.dp(40);
-            // layoutParams.leftMargin = AndroidUtilities.getRealScreenSize().x / 2;
-            layoutParams.gravity = Gravity.TOP | Gravity.LEFT;
-            dropDownContainer.setLayoutParams(layoutParams);
-            dropDown = new TextView(context);
-            dropDown.setGravity(Gravity.LEFT);
-            dropDown.setSingleLine(true);
-            dropDown.setLines(1);
-            dropDown.setMaxLines(1);
-            dropDown.setEllipsize(TextUtils.TruncateAt.END);
-            dropDown.setTextColor(0xffffffff);
-            // dropDown.getPaint().setFakeBoldText(true);
-            dropDown.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_arrow_drop_down,
-                    0);
-            dropDown.setCompoundDrawablePadding(AndroidUtilities.dp(4));
-//            dropDown.setPadding(0, 0, AndroidUtilities.dp(10), 0);
-            dropDown.setText(R.string.PickerPhotos);
-            dropDownContainer.addView(dropDown);
-            layoutParams = (FrameLayout.LayoutParams) dropDown.getLayoutParams();
-            layoutParams.width = LayoutHelper.WRAP_CONTENT;
-            layoutParams.height = LayoutHelper.WRAP_CONTENT;
-            layoutParams.gravity = Gravity.CENTER_VERTICAL;
-            dropDown.setLayoutParams(layoutParams);
-        } else {
-            actionBar.setTitle(context.getString(R.string.Album));
-        }
 
         listView = new ListView(context);
         listView.setPadding(AndroidUtilities.dp(4), 0, AndroidUtilities.dp(4),
@@ -224,7 +184,8 @@ public class PhotoAlbumPickerActivity extends BaseFragment
         emptyView.setTextSize(20);
         emptyView.setGravity(Gravity.CENTER);
         emptyView.setVisibility(View.GONE);
-        emptyView.setText(R.string.NoPhotos);
+        final @StringRes int resId = selectedMode == GalleryConfig.PHOTO_MODE ? R.string.NoPhotos : R.string.NoVideo;
+        emptyView.setText(resId);
         frameLayout.addView(emptyView);
         layoutParams = (FrameLayout.LayoutParams) emptyView.getLayoutParams();
         layoutParams.width = LayoutHelper.MATCH_PARENT;
@@ -256,7 +217,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
         progressView.setLayoutParams(layoutParams);
 
         // pickerBottomLayout = new PickerBottomLayout(context);
-        // pickerBottomLayout.cancelButton.setVisibility(singlePhoto ? View.GONE : View.VISIBLE);
+        // pickerBottomLayout.cancelButton.setVisibility(singleEntity ? View.GONE : View.VISIBLE);
         // frameLayout.addView(pickerBottomLayout);
         // layoutParams = (FrameLayout.LayoutParams) pickerBottomLayout.getLayoutParams();
         // layoutParams.width = LayoutHelper.MATCH_PARENT;
@@ -277,7 +238,8 @@ public class PhotoAlbumPickerActivity extends BaseFragment
         // }
         // });
 
-        if (loading && (albumsSorted == null || albumsSorted != null && albumsSorted.isEmpty())) {
+        ArrayList<MediaController.AlbumEntry> dataSource = getDatasource();
+        if (loading && (dataSource == null || dataSource != null && dataSource.isEmpty())) {
             progressView.setVisibility(View.VISIBLE);
             listView.setEmptyView(null);
         } else {
@@ -291,12 +253,20 @@ public class PhotoAlbumPickerActivity extends BaseFragment
         return fragmentView;
     }
 
+    private ArrayList<MediaController.AlbumEntry> getDatasource() {
+        if (selectedMode == GalleryConfig.VIDEO_MODE) {
+            return videoAlbumsSorted;
+        } else {
+            return albumsSorted;
+        }
+    }
+
     public void openPreview() {
         final List<Object> selectPhotos = computeSelectPhotos();
         if (selectPhotos != null) {
             PhotoViewer.getInstance().setParentActivity(getParentActivity());
             PhotoViewer.getInstance().openPhotoForSelect(selectPhotos, true, 0,
-                    singlePhoto ? 1 : 0, new CustomProvider(selectPhotos));
+                    singleEntity ? 1 : 0, new CustomProvider(selectPhotos));
         }
     }
 
@@ -466,8 +436,23 @@ public class PhotoAlbumPickerActivity extends BaseFragment
                 loading = false;
             }
 
-            if (null != albumsSorted && albumsSorted.size() > 0) {
-                openPhotoPicker(albumsSorted.get(0), 0, true);
+            final String[] mimeTypes = (String[]) args[5];
+            final String videoType = "video";
+            boolean isVideo = false;
+            if (mimeTypes != null && mimeTypes.length > 0) {
+                if (mimeTypes[0].contains(videoType)) {
+                    isVideo = true;
+                }
+            }
+
+            if (isVideo) {
+                if (videoAlbumsSorted != null && videoAlbumsSorted.size() > 0) {
+                    openPhotoPicker(videoAlbumsSorted.get(0), 0, true);
+                }
+            } else {
+                if (albumsSorted != null && albumsSorted.size() > 0) {
+                    openPhotoPicker(albumsSorted.get(0), 0, true);
+                }
             }
         }
     }
@@ -548,7 +533,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     private void openPhotoPicker(MediaController.AlbumEntry albumEntry, int type,
             boolean withAnim) {
         currentPhotoPickerActivity = new PhotoPickerActivity(type, limitPickPhoto, albumEntry,
-                selectedPhotos, null, singlePhoto);
+                selectedPhotos, null, singleEntity);
         currentPhotoPickerActivity
                 .setDelegate(new PhotoPickerActivity.PhotoPickerActivityDelegate() {
                     @Override
@@ -633,7 +618,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
 
         @Override
         public int getCount() {
-            if (singlePhoto || selectedMode == 0) {
+            if (selectedMode == 0) {
                 int count = albumsSorted != null
                         ? (int) Math.ceil(albumsSorted.size() / (float) columnsCount) : 0;
                 return count;
@@ -681,25 +666,17 @@ public class PhotoAlbumPickerActivity extends BaseFragment
                 photoPickerAlbumsCell.setAlbumsCount(columnsCount);
                 for (int a = 0; a < columnsCount; a++) {
                     int index;
-                    // if ( singlePhoto || selectedMode == 1) {
+                    // if ( singleEntity || selectedMode == 1) {
                     index = i * columnsCount + a;
                     // } else {
                     // index = (i - 1) * columnsCount + a;
                     // }
-                    if (singlePhoto || selectedMode == 0) {
-                        if (index < albumsSorted.size()) {
-                            MediaController.AlbumEntry albumEntry = albumsSorted.get(index);
-                            photoPickerAlbumsCell.setAlbum(a, albumEntry);
-                        } else {
-                            photoPickerAlbumsCell.setAlbum(a, null);
-                        }
+                    ArrayList<MediaController.AlbumEntry> dataSource = getDatasource();
+                    if (index < dataSource.size()) {
+                        MediaController.AlbumEntry albumEntry = dataSource.get(index);
+                        photoPickerAlbumsCell.setAlbum(a, albumEntry);
                     } else {
-                        if (index < videoAlbumsSorted.size()) {
-                            MediaController.AlbumEntry albumEntry = videoAlbumsSorted.get(index);
-                            photoPickerAlbumsCell.setAlbum(a, albumEntry);
-                        } else {
-                            photoPickerAlbumsCell.setAlbum(a, null);
-                        }
+                        photoPickerAlbumsCell.setAlbum(a, null);
                     }
                 }
                 photoPickerAlbumsCell.requestLayout();
@@ -721,7 +698,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
 
         @Override
         public int getItemViewType(int i) {
-            if (singlePhoto || selectedMode == 1) {
+            if (selectedMode == 1) {
                 return 0;
             }
             // if (i == 0) {
@@ -732,7 +709,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
 
         @Override
         public int getViewTypeCount() {
-            if (singlePhoto || selectedMode == 1) {
+            if (selectedMode == 1) {
                 return 1;
             }
             return 2;
