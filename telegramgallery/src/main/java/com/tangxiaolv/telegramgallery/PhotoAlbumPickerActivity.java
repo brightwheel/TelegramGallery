@@ -70,7 +70,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     private boolean sendPressed;
     private boolean singleEntity;
     private boolean allowGifs;
-    private int selectedMode;
+    private @PickerMode int selectedMode;
     private final String[] filterMimeTypes;
 
     private final int[] imageCheckIndexArr;
@@ -118,43 +118,16 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     public View createView(Context context) {
         actionBar.setBackgroundColor(Theme.ACTION_BAR_MEDIA_PICKER_COLOR);
         actionBar.setItemsBackgroundColor(Theme.ACTION_BAR_PICKER_SELECTOR_COLOR);
-        // actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setBackText(context.getString(R.string.Cancel));
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
-            @Override
-            public void onItemClick(int id) {
-                if (id == -1) {
-                    finishFragment();
-                } else if (id == 1) {
-                    if (delegate != null) {
-                        finishFragment(false);
-                        delegate.startPhotoSelectActivity();
-                    }
-                } else if (id == item_photos) {
-                    if (selectedMode == 0) {
-                        return;
-                    }
-                    selectedMode = 0;
-                    dropDown.setText(
-                            R.string.PickerPhotos);
-                    emptyView.setText(R.string.NoPhotos);
-                    listAdapter.notifyDataSetChanged();
-                } else if (id == item_video) {
-                    if (selectedMode == 1) {
-                        return;
-                    }
-                    selectedMode = 1;
-                    dropDown.setText(
-                            R.string.PickerVideo);
-                    emptyView.setText(R.string.NoVideo);
-                    listAdapter.notifyDataSetChanged();
-                }
-            }
-        });
-
-
+                                                  @Override
+                                                  public void onItemClick(int id) {
+                                                      if (id == -1) {
+                                                          finishFragment();
+                                                      }
+                                                  }
+                                              });
         fragmentView = new FrameLayout(context);
-
         FrameLayout frameLayout = (FrameLayout) fragmentView;
         frameLayout.setBackgroundColor(DarkTheme ? 0xff000000 : 0xffffffff);
 
@@ -184,7 +157,8 @@ public class PhotoAlbumPickerActivity extends BaseFragment
         emptyView.setTextSize(20);
         emptyView.setGravity(Gravity.CENTER);
         emptyView.setVisibility(View.GONE);
-        final @StringRes int resId = selectedMode == GalleryConfig.PHOTO_MODE ? R.string.NoPhotos : R.string.NoVideo;
+        final @StringRes int resId = selectedMode == GalleryConfig.PHOTO_MODE ?
+            R.string.NoPhotos : R.string.NoVideo;
         emptyView.setText(resId);
         frameLayout.addView(emptyView);
         layoutParams = (FrameLayout.LayoutParams) emptyView.getLayoutParams();
@@ -216,28 +190,6 @@ public class PhotoAlbumPickerActivity extends BaseFragment
         layoutParams.gravity = Gravity.CENTER;
         progressView.setLayoutParams(layoutParams);
 
-        // pickerBottomLayout = new PickerBottomLayout(context);
-        // pickerBottomLayout.cancelButton.setVisibility(singleEntity ? View.GONE : View.VISIBLE);
-        // frameLayout.addView(pickerBottomLayout);
-        // layoutParams = (FrameLayout.LayoutParams) pickerBottomLayout.getLayoutParams();
-        // layoutParams.width = LayoutHelper.MATCH_PARENT;
-        // layoutParams.height = AndroidUtilities.dp(48);
-        // layoutParams.gravity = Gravity.BOTTOM;
-        // pickerBottomLayout.setLayoutParams(layoutParams);
-        // pickerBottomLayout.cancelButton.setOnClickListener(new View.OnClickListener() {
-        // @Override
-        // public void onClick(View view) {
-        // openPreview();
-        // }
-        // });
-        // pickerBottomLayout.doneButton.setOnClickListener(new View.OnClickListener() {
-        // @Override
-        // public void onClick(View view) {
-        // sendSelectedPhotos();
-        // finishFragment();
-        // }
-        // });
-
         ArrayList<MediaController.AlbumEntry> dataSource = getDatasource();
         if (loading && (dataSource == null || dataSource != null && dataSource.isEmpty())) {
             progressView.setVisibility(View.VISIBLE);
@@ -246,9 +198,6 @@ public class PhotoAlbumPickerActivity extends BaseFragment
             progressView.setVisibility(View.GONE);
             listView.setEmptyView(emptyView);
         }
-
-        // pickerBottomLayout.updateSelectedCount(selectedPhotos.size() + selectedWebPhotos.size(),
-        // true);
 
         return fragmentView;
     }
