@@ -213,9 +213,11 @@ public class PhotoPickerActivity extends BaseFragment
                     final long videoDurationInMillis = selectedAlbum.photos.get(i).getDuration();
                     final long videoSize = selectedAlbum.photos.get(i).getSize();
                     if (videoDurationInMillis > maxVideoDurationInMillis) {
-                        Toast.makeText(context, "You must select a video with a duration of 30 seconds or less", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, R.string.telegramgallery_max_video_duration_error_message,
+                            Toast.LENGTH_SHORT).show();
                     } else if (videoSize > maxVideoSizeInBytes) {
-                        Toast.makeText(context, "You must select a video with a size of 50MB or less", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, R.string.telegramgallery_max_video_size_error_message,
+                            Toast.LENGTH_SHORT).show();
                     } else if (delegate.didSelectVideo(selectedAlbum.photos.get(i).path)) {
                         finishFragment();
                     }
