@@ -32,5 +32,7 @@
     <string name="Preview">Preview</string>
     <string name="album_read_fail">Failed to read an album, please check permissions</string>
     <string name="done">done</string>
+    <string name="telegramgallery_max_video_size_error_message">Sorry, that video is too large. Please choose a video less than 50 MB.</string>
+    <string name="telegramgallery_max_video_duration_error_message">Sorry, that video is too long. Please choose a video that is 30 seconds or less.</string>
 </resources>
 
