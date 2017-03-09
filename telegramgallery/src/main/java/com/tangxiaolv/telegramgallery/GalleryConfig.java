@@ -76,6 +76,7 @@ public class GalleryConfig implements Parcelable {
         private int limitPickPhoto = 9;
         private PendingIntent multiPhotoSelectedPendingIntent = null;
         private @PickerMode int pickerMode = PHOTO_MODE;
+        private boolean hasModeBeenSet = false;
 
         /**
          * @param filterMimeTypes filter of media type， based on MimeType standards：
@@ -84,6 +85,9 @@ public class GalleryConfig implements Parcelable {
          */
         public Build filterMimeTypes(String[] filterMimeTypes) {
             this.filterMimeTypes = filterMimeTypes;
+            if (this.hasModeBeenSet) {
+                throw new IllegalStateException("filterMimeTypes() is not compatible with pickerMode()");
+            }
             return this;
         }
 
@@ -123,8 +127,17 @@ public class GalleryConfig implements Parcelable {
             return this;
         }
 
+        /**
+         * @param pickerMode the mode of the picker, one of PHOTO_MODE or VIDEO_MODE.
+         *                   Setting this mode will override anything passed via
+         *                   {@code filterMimeTypes}
+         */
         public Build pickerMode(@PickerMode int pickerMode) {
+            this.hasModeBeenSet = true;
             this.pickerMode = pickerMode;
+            this.filterMimeTypes = pickerMode == PHOTO_MODE ?
+                new String[] {"image/*"} :
+                new String[] {"video/*"};
             return this;
         }
 
