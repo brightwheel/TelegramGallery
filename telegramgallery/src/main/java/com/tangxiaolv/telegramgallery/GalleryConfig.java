@@ -14,11 +14,13 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class GalleryConfig implements Parcelable {
 
-    private String[] filterMimeTypes;
     private String hintOfPick;
     private boolean singleEntity;
     private int limitPickPhoto;
     private PendingIntent limitReachedIntent;
+    private long maxVideoDuration;
+    private long maxVideoSize;
+    private long maxPhotoSize;
 
     private @PickerMode int pickerMode;
 
@@ -35,57 +37,60 @@ public class GalleryConfig implements Parcelable {
 
     }
 
-    private GalleryConfig(String[] filterMimeTypes, String hintOfPick, boolean singleEntity,
-                          int limitPickPhoto, PendingIntent limitReachedIntent, @PickerMode int pickerMode) {
-        this.filterMimeTypes = filterMimeTypes;
+    private GalleryConfig(String hintOfPick, boolean singleEntity, int limitPickPhoto,
+                          PendingIntent limitReachedIntent, @PickerMode int pickerMode,
+                          long maxVideoDuration, long maxVideoSize, long maxPhotoSize) {
         this.hintOfPick = hintOfPick;
         this.singleEntity = singleEntity;
         this.limitPickPhoto = limitPickPhoto;
         this.limitReachedIntent = limitReachedIntent;
         this.pickerMode = pickerMode;
+        this.maxVideoDuration = maxVideoDuration;
+        this.maxVideoSize = maxVideoSize;
+        this.maxPhotoSize = maxPhotoSize;
     }
 
-    public String[] getFilterMimeTypes() {
-        return filterMimeTypes;
-    }
-
-    public String getHintOfPick() {
+    String getHintOfPick() {
         return hintOfPick;
     }
 
-    public boolean isSingleEntity() {
+    boolean isSingleEntity() {
         return singleEntity;
     }
 
-    public int getLimitPickPhoto() {
+    int getLimitPickPhoto() {
         return limitPickPhoto;
     }
 
-    public PendingIntent getLimitReachedIntent() {
+    PendingIntent getLimitReachedIntent() {
         return limitReachedIntent;
     }
 
-    public @GalleryConfig.PickerMode int getPickerMode() {
+    @GalleryConfig.PickerMode int getPickerMode() {
         return pickerMode;
     }
 
+    long getMaxVideoDuration() {
+        return maxVideoDuration;
+    }
+
+    long getMaxVideoSize() {
+        return maxVideoSize;
+    }
+
+    long getMaxPhotoSize() {
+        return maxPhotoSize;
+    }
+
     public static class Build {
-        private String[] filterMimeTypes;
         private String hintOfPick;
         private boolean singleEntity = false;
         private int limitPickPhoto = 9;
         private PendingIntent multiPhotoSelectedPendingIntent = null;
         private @PickerMode int pickerMode = PHOTO_MODE;
-
-        /**
-         * @param filterMimeTypes filter of media type， based on MimeType standards：
-         *            {http://www.w3school.com.cn/media/media_mimeref.asp}
-         *            <Li>eg:new string[]{"image/gif","image/jpeg"}
-         */
-        public Build filterMimeTypes(String[] filterMimeTypes) {
-            this.filterMimeTypes = filterMimeTypes;
-            return this;
-        }
+        private long maxVideoDuration = 30*1000;
+        private long maxVideoSize = 50*1024*1024;
+        private long maxPhotoSize = 10*1024*1024;
 
         /**
          * @param hintOfPick hint of Toast when limit is reached
@@ -128,18 +133,35 @@ public class GalleryConfig implements Parcelable {
             return this;
         }
 
+        public Build maxVideoDuration(long maxVideoDuration) {
+            this.maxVideoDuration = maxVideoDuration;
+            return this;
+        }
+
+        public Build maxVideoSize(long maxVideoSize) {
+            this.maxVideoSize = maxVideoSize;
+            return this;
+        }
+
+        public Build maxPhotoSize(long maxPhotoSize) {
+            this.maxPhotoSize = maxPhotoSize;
+            return this;
+        }
+
         public GalleryConfig build() {
             this.limitPickPhoto = singleEntity ? 1 : limitPickPhoto > 0 ? limitPickPhoto : 1;
             if (singleEntity) {
                 this.multiPhotoSelectedPendingIntent = null;
             }
             return new GalleryConfig(
-                filterMimeTypes,
                 hintOfPick,
                 singleEntity,
                 limitPickPhoto,
                 multiPhotoSelectedPendingIntent,
-                pickerMode);
+                pickerMode,
+                maxVideoDuration,
+                maxVideoSize,
+                maxPhotoSize);
         }
     }
 
@@ -150,22 +172,26 @@ public class GalleryConfig implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeStringArray(this.filterMimeTypes);
-        dest.writeString(this.hintOfPick);
-        dest.writeByte(this.singleEntity ? (byte) 1 : (byte) 0);
-        dest.writeInt(this.limitPickPhoto);
-        dest.writeValue(this.limitReachedIntent);
-        dest.writeInt(this.pickerMode);
+        dest.writeString(hintOfPick);
+        dest.writeByte(singleEntity ? (byte) 1 : (byte) 0);
+        dest.writeInt(limitPickPhoto);
+        dest.writeValue(limitReachedIntent);
+        dest.writeInt(pickerMode);
+        dest.writeLong(maxVideoDuration);
+        dest.writeLong(maxVideoSize);
+        dest.writeLong(maxPhotoSize);
     }
 
-    protected GalleryConfig(Parcel in) {
-        this.filterMimeTypes = in.createStringArray();
-        this.hintOfPick = in.readString();
-        this.singleEntity = in.readByte() != 0;
-        this.limitPickPhoto = in.readInt();
-        this.limitReachedIntent =
+    private GalleryConfig(Parcel in) {
+        hintOfPick = in.readString();
+        singleEntity = in.readByte() != 0;
+        limitPickPhoto = in.readInt();
+        limitReachedIntent =
             (PendingIntent) in.readValue(PendingIntent.class.getClassLoader());
-        this.pickerMode = in.readInt();
+        pickerMode = in.readInt();
+        maxVideoDuration = in.readLong();
+        maxVideoSize = in.readLong();
+        maxPhotoSize = in.readLong();
     }
 
     public static final Creator<GalleryConfig> CREATOR = new Creator<GalleryConfig>() {

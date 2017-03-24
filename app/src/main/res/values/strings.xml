@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TelegramGallery</string>
+    <string name="pick_multiple_photos">Pick multiple photos</string>
+    <string name="pick_single_photo">Pick single photo</string>
+    <string name="pick_single_video">Pick single video</string>
 </resources>

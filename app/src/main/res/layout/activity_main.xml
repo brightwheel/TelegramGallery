@@ -13,14 +13,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="相册多选"/>
+        android:text="@string/pick_multiple_photos"/>
     <Button
         android:id="@+id/btn2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="相册单选"/>
-
+        android:text="@string/pick_single_photo"/>
+    <Button
+        android:id="@+id/btn3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/pick_single_video"/>
 
     <GridView
         android:layout_marginTop="8dp"

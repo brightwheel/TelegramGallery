@@ -82,6 +82,9 @@ public class PhotoPickerActivity extends BaseFragment
     private int giphyReqId;
     private int lastSearchToken;
     private final int limitPickPhoto;
+    private final long maxVideoDuration;
+    private final long maxVideoSize;
+    private final long maxPictureSize;
 
     private MediaController.AlbumEntry selectedAlbum;
 
@@ -97,14 +100,11 @@ public class PhotoPickerActivity extends BaseFragment
 
     private PhotoPickerActivityDelegate delegate;
 
-    static final private long maxVideoDurationInMillis = 30000;
-    //50MB
-    static final private long maxVideoSizeInBytes = 50000000;
-
     public PhotoPickerActivity(int type, int limitPickPhoto,
             MediaController.AlbumEntry selectedAlbum,
             HashMap<Integer, MediaController.PhotoEntry> selectedPhotos,
-            ArrayList<MediaController.SearchImage> recentImages, boolean onlyOnePhoto) {
+            ArrayList<MediaController.SearchImage> recentImages, boolean onlyOnePhoto,
+                               long maxVideoDuration, long maxVideoSize, long maxPictureSize) {
         super();
         this.limitPickPhoto = limitPickPhoto;
         this.selectedAlbum = selectedAlbum;
@@ -112,6 +112,9 @@ public class PhotoPickerActivity extends BaseFragment
         this.type = type;
         this.recentImages = recentImages;
         this.singleEntity = onlyOnePhoto;
+        this.maxVideoDuration = maxVideoDuration;
+        this.maxVideoSize = maxVideoSize;
+        this.maxPictureSize = maxPictureSize;
         if (selectedAlbum != null && selectedAlbum.isVideo) {
             singleEntity = true;
         }
@@ -212,12 +215,14 @@ public class PhotoPickerActivity extends BaseFragment
                     }
                     final long videoDurationInMillis = selectedAlbum.photos.get(i).getDuration();
                     final long videoSize = selectedAlbum.photos.get(i).getSize();
-                    if (videoDurationInMillis > maxVideoDurationInMillis) {
-                        Toast.makeText(context, R.string.telegramgallery_max_video_duration_error_message,
-                            Toast.LENGTH_SHORT).show();
-                    } else if (videoSize > maxVideoSizeInBytes) {
-                        Toast.makeText(context, R.string.telegramgallery_max_video_size_error_message,
-                            Toast.LENGTH_SHORT).show();
+                    if (videoDurationInMillis > maxVideoDuration) {
+                        Toast.makeText(context, context.getString(
+                            R.string.telegramgallery_max_video_duration_error_message,
+                            maxVideoDuration / 1000), Toast.LENGTH_SHORT).show();
+                    } else if (videoSize > maxVideoSize) {
+                        Toast.makeText(context, context.getString(
+                            R.string.telegramgallery_max_video_size_error_message,
+                            maxVideoSize / 1024 / 1024), Toast.LENGTH_SHORT).show();
                     } else if (delegate.didSelectVideo(selectedAlbum.photos.get(i).path)) {
                         finishFragment();
                     }
@@ -233,6 +238,13 @@ public class PhotoPickerActivity extends BaseFragment
                         }
                     }
                     if (i < 0 || i >= arrayList.size()) {
+                        return;
+                    }
+                    if (selectedAlbum.photos.get(i).getSize() > maxPictureSize) {
+                        Toast.makeText(context,
+                            context.getString(R.string.telegramgallery_max_photo_size_error_message,
+                                maxPictureSize / 1024 / 1024),
+                            Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (searchItem != null) {
@@ -864,10 +876,17 @@ public class PhotoPickerActivity extends BaseFragment
                                     updatePhotoAtIndex(index);
                                     delegate.removeCheckboxTag(photoEntry.imageId);
                                 } else if (selectedPhotos.size() < limitPickPhoto) {
-                                    selectedPhotos.put(photoEntry.imageId, photoEntry);
-                                    int cornerIndex = delegate.generateCheckCorner();
-                                    photoEntry.sortindex = cornerIndex;
-                                    delegate.putCheckboxTag(photoEntry.imageId, cornerIndex);
+                                    if (photoEntry.getSize() <= maxPictureSize) {
+                                        selectedPhotos.put(photoEntry.imageId, photoEntry);
+                                        int cornerIndex = delegate.generateCheckCorner();
+                                        photoEntry.sortindex = cornerIndex;
+                                        delegate.putCheckboxTag(photoEntry.imageId, cornerIndex);
+                                    } else {
+                                        Toast.makeText(mContext, mContext.getString(
+                                            R.string.telegramgallery_max_photo_size_error_message,
+                                            maxPictureSize / 1024 / 1024),
+                                            Toast.LENGTH_SHORT).show();
+                                    }
                                 } else {
                                     if (maxSelectionReached != null) {
                                         try {
@@ -924,7 +943,15 @@ public class PhotoPickerActivity extends BaseFragment
                         final long durationInMillis = photoEntry.getDuration();
                         final long videoSize = photoEntry.getSize();
                         cell.setVideoLength(durationInMillis);
-                        if (durationInMillis > maxVideoDurationInMillis || videoSize > maxVideoSizeInBytes) {
+                        if (durationInMillis > maxVideoDuration || videoSize > maxVideoSize) {
+                            cell.photoImage.setAlpha(0.5f);
+                            cell.textView.setTextColor(0xffaaaaaa);
+                        } else {
+                            cell.photoImage.setAlpha(1.f);
+                            cell.textView.setTextColor(0xffffffff);
+                        }
+                    } else {
+                        if (photoEntry.getSize() > maxPictureSize) {
                             cell.photoImage.setAlpha(0.5f);
                             cell.textView.setTextColor(0xffaaaaaa);
                         } else {

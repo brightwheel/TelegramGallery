@@ -50,6 +50,9 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     public static int limitPickPhoto;
     public static String sHintOfPick;
     public static PendingIntent maxSelectionReached;
+    private static long maxVideoDuration;
+    private static long maxVideoSize;
+    private static long maxPhotoSize;
     public static boolean DarkTheme = true;
 
     private ArrayList<MediaController.AlbumEntry> albumsSorted = null;
@@ -81,22 +84,34 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     private final static int item_photos = 2;
     private final static int item_video = 3;
 
-    public PhotoAlbumPickerActivity(String[] filterMimeTypes,
-                                                       int limitPick,
-                                                       boolean singleEntity,
-                                                       String hintOfPick,
-                                                       boolean allowGifs,
-                                                       PendingIntent maxSelectionReached,
-                                                       @PickerMode int pickerMode) {
+    public PhotoAlbumPickerActivity(int limitPick, boolean singleEntity, String hintOfPick,
+                                    boolean allowGifs, PendingIntent maxSelectionReached,
+                                    @PickerMode int pickerMode, long maxVideoDuration,
+                                    long maxVideoSize, long maxPhotoSize) {
         super();
         this.limitPickPhoto = limitPick;
         this.sHintOfPick = hintOfPick;
-        this.filterMimeTypes = filterMimeTypes;
         this.imageCheckIndexArr = new int[limitPick];
         this.singleEntity = singleEntity;
         this.allowGifs = allowGifs;
         this.maxSelectionReached = maxSelectionReached;
         this.selectedMode = pickerMode;
+        this.maxVideoDuration = maxVideoDuration;
+        this.maxVideoSize = maxVideoSize;
+        this.maxPhotoSize = maxPhotoSize;
+        String mimeType;
+        switch (selectedMode) {
+            case GalleryConfig.PHOTO_MODE:
+                mimeType = "image/*";
+                break;
+            case GalleryConfig.VIDEO_MODE:
+                mimeType = "video/*";
+                break;
+            default:
+                mimeType = "";
+                break;
+        }
+        this.filterMimeTypes = new String[] { mimeType };
     }
 
     @Override
@@ -533,7 +548,7 @@ public class PhotoAlbumPickerActivity extends BaseFragment
     private void openPhotoPicker(MediaController.AlbumEntry albumEntry, int type,
             boolean withAnim) {
         currentPhotoPickerActivity = new PhotoPickerActivity(type, limitPickPhoto, albumEntry,
-                selectedPhotos, null, singleEntity);
+                selectedPhotos, null, singleEntity, maxVideoDuration, maxVideoSize, maxPhotoSize);
         currentPhotoPickerActivity
                 .setDelegate(new PhotoPickerActivity.PhotoPickerActivityDelegate() {
                     @Override

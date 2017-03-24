@@ -66,13 +66,15 @@ public class GalleryActivity extends Activity implements ActionBarLayout.ActionB
         Intent intent = getIntent();
         GalleryConfig config = intent.getParcelableExtra(GALLERY_CONFIG);
         albumPickerActivity = new PhotoAlbumPickerActivity(
-            config.getFilterMimeTypes(),
             config.getLimitPickPhoto(),
             config.isSingleEntity(),
             config.getHintOfPick(),
             false,
             config.getLimitReachedIntent(),
-            config.getPickerMode());
+            config.getPickerMode(),
+            config.getMaxVideoDuration(),
+            config.getMaxVideoSize(),
+            config.getMaxPhotoSize());
         albumPickerActivity.setDelegate(mPhotoAlbumPickerActivityDelegate);
         actionBarLayout.presentFragment(albumPickerActivity, false, true, true);
     }
@@ -196,30 +198,5 @@ public class GalleryActivity extends Activity implements ActionBarLayout.ActionB
         Intent intent = new Intent(activity, GalleryActivity.class);
         intent.putExtra(GALLERY_CONFIG, config);
         activity.startActivityForResult(intent, requestCode);
-    }
-
-    @Deprecated
-    public static void openActivity(
-            Activity activity,
-            String[] filterMimeTypes,
-            boolean singleEntity,
-            int limitPickPhoto,
-            int requestCode) {
-        GalleryConfig.Build build = new GalleryConfig.Build();
-        build.filterMimeTypes(filterMimeTypes)
-                .singleEntity(singleEntity)
-                .limitPickPhoto(limitPickPhoto);
-        openActivity(activity, requestCode, build.build());
-    }
-
-    @Deprecated
-    public static void openActivity(Activity activity, boolean singlePhoto, int limitPickPhoto,
-            int requestCode) {
-        openActivity(activity, null, singlePhoto, limitPickPhoto, requestCode);
-    }
-
-    @Deprecated
-    public static void openActivity(Activity activity, boolean singlePhoto, int requestCode) {
-        openActivity(activity, null, singlePhoto, 1, requestCode);
     }
 }
