@@ -117,19 +117,14 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
 
         public PhotoEntry(int bucketId, int imageId, long dateTaken, String path, int orientation,
                           boolean isVideo, long duration, long size) {
-            this(bucketId, imageId, dateTaken, path, orientation, isVideo);
-            this.duration = duration;
-            this.size = size;
-        }
-
-        public PhotoEntry(int bucketId, int imageId, long dateTaken, String path, int orientation,
-                boolean isVideo) {
             this.bucketId = bucketId;
             this.imageId = imageId;
             this.dateTaken = dateTaken;
             this.path = path;
             this.orientation = orientation;
             this.isVideo = isVideo;
+            this.duration = duration;
+            this.size = size;
         }
 
         public long getDuration() {
@@ -613,7 +608,7 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
                             }
 
                             PhotoEntry photoEntry = new PhotoEntry(bucketId, imageId, dateTaken,
-                                    path, orientation, false);
+                                    path, orientation, false, 0, size);
 
                             if (allPhotosAlbum == null) {
                                 allPhotosAlbum = new AlbumEntry(0, Gallery.applicationContext.getString(

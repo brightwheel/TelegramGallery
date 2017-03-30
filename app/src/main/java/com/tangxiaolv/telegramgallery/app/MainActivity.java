@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Button btn = (Button) findViewById(R.id.btn);
         Button btn2 = (Button) findViewById(R.id.btn2);
+        Button btn3 = (Button) findViewById(R.id.btn3);
         GridView gv = (GridView) findViewById(R.id.gv);
         gv.setAdapter(adapter = new BaseAdapter() {
             @Override
@@ -73,11 +74,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 GalleryConfig config = new GalleryConfig.Build()
-                        .limitPickPhoto(11)
-                        .singleEntity(false)
-                        .hintOfPick("this is pick hint")
-                        .filterMimeTypes(new String[]{})
-                        .build();
+                    .limitPickPhoto(11)
+                    .singleEntity(false)
+                    .hintOfPick("this is pick hint")
+                    .pickerMode(GalleryConfig.PHOTO_MODE)
+                    .build();
                 GalleryActivity.openActivity(MainActivity.this, reqCode, config);
             }
         });
@@ -86,7 +87,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 GalleryConfig config = new GalleryConfig.Build()
-                        .singleEntity(true).build();
+                    .pickerMode(GalleryConfig.PHOTO_MODE)
+                    .singleEntity(true)
+                    .build();
+                GalleryActivity.openActivity(MainActivity.this, reqCode, config);
+            }
+        });
+
+        btn3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GalleryConfig config = new GalleryConfig.Build()
+                    .singleEntity(true)
+                    .pickerMode(GalleryConfig.VIDEO_MODE)
+                    .build();
                 GalleryActivity.openActivity(MainActivity.this, reqCode, config);
             }
         });
